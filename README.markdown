@@ -2,18 +2,24 @@ This repository holds the files used to generate the Internet Draft describing E
 
 ## Building
 
-To build:
+To build, first install mmark (you will need Go) and xml2rfc (you will need Python PIP).
 
-  go get github.com/miekg/mmark
-  cd $GOPATH/src/github.com/miekg/mmark/mmark
-  go install
-  mmark -xml2 -page epp-over-http.markdown epp-over-http.xml
+To install mmark:
 
-To create RFCs:
+```
+go get github.com/miekg/mmark
+cd $GOPATH/src/github.com/miekg/mmark/mmark
+go install
+```
 
-  pip install xml2rfc --upgrade
-  mmark -xml2 -page epp-over-http.markdown epp-over-http.xml && xml2rfc --text epp-over-http.xml
+Install xml2rfc:
 
-You can also build with make once you have mmark and xml2rfc installed.
+```
+pip install xml2rfc --upgrade
+```
 
-  make
+To build the RFC in text and HTML formats:
+
+```
+make
+```
