@@ -1,0 +1,224 @@
+
+
+
+
+regext                                                           A. Eden
+Internet-Draft                                                  DNSimple
+Intended status: Informational                              May 18, 2018
+Expires: November 19, 2018
+
+
+                             EPP over HTTP
+                   draft-regext-eden-epp-over-http-00
+
+Abstract
+
+   This document describes how an Extensible Provisioning Protocol (EPP)
+   session is mapped onto a sequence of HTTP requests and responses.
+   This mapping requires use of the Transport Layer Security (TLS)
+   protocol to protect information exchanged between an EPP client and
+   an EPP server.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on November 19, 2018.
+
+Copyright Notice
+
+   Copyright (c) 2018 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (https://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
+   the Trust Legal Provisions and are provided without warranty as
+   described in the Simplified BSD License.
+
+
+
+Eden                    Expires November 19, 2018               [Page 1]
+
+Internet-Draft                EPP over HTTP                     May 2018
+
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+     1.1.  Background and Motivation . . . . . . . . . . . . . . . .   2
+     1.2.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Session Management  . . . . . . . . . . . . . . . . . . . . .   2
+   3.  Message Exchange  . . . . . . . . . . . . . . . . . . . . . .   3
+   4.  Security Considerations . . . . . . . . . . . . . . . . . . .   3
+   5.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .   3
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   4
+   Appendix A.  Acknowledgements . . . . . . . . . . . . . . . . . .   4
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   4
+
+1.  Introduction
+
+1.1.  Background and Motivation
+
+   This document describes how the Extensible Provisioning Protocol
+   (EPP) is mapped onto a sequence of HTTP requests and responses.
+   Transport security is provided by the Transport Layer Security (TLS)
+   Protocol [RFC2246].  EPP is described in [RFC5730].  HTTP/1.1 is
+   described in [RFC2616].
+
+   [RFC5734] describes how to map EPP onto stateful TCP connections.
+   Since the publication of that document, HTTP has gained wide adoption
+   for transporting a wide variety of application data.  HTTP provides
+   several advantages over direct TCP for transporting data, including a
+   wide variety of off-the-shelf server implementations, standards for
+   authentication, proxy support, etc.  Furthermore, HTTP provides a
+   simpler mechanism for scaling due to its stateless nature.
+
+1.2.  Terminology
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in RFC 2119 [RFC2119].
+
+2.  Session Management
+
+   As HTTP is a stateless protocol, each HTTP request must contain all
+   of the information necessary to establish the identity of the EPP
+   client.  The EPP "<login>" and "<logout>" commands are not applicable
+   when using HTTP as the transport protocol, rather authentication
+   credentials MUST be sent on each request using standard HTTP
+   authentication mechanisms.
+
+   The EPP "<login>" command can be mapped to HTTP headers as follows:
+
+
+
+
+Eden                    Expires November 19, 2018               [Page 2]
+
+Internet-Draft                EPP over HTTP                     May 2018
+
+
+               Authorization: Basic Q2xpZW50WDpGT08tYmFyMg==
+               Content-Language: en
+               X-EPP-Version: 1.0
+               X-EPP-Service: urn:ietf:params:xml:ns:obj1
+               X-EPP-Service: urn:ietf:params:xml:ns:obj2
+               X-EPP-Service: urn:ietf:params:xml:ns:obj3
+               X-EPP-Service-Ext: http://custom/obj1ext-1.0
+
+3.  Message Exchange
+
+   HTTP servers that support EPP over HTTP must support HTTP requests
+   with a single EPP frame.  Servers MAY support multipart messages.
+
+   When the body of the HTTP request contains a single EPP frame, the
+   content type of the HTTP message MUST be "application/epp+xml".
+
+   When a multipart body is used, the body content type MUST be
+   "multipart/mixed" and MUST define the boundry.  Each part MUST
+   contain a single EPP frame and the content type of each part MUST be
+   "application/epp+xml".  In multipart messages, each part MUST be
+   processed in the order it appears in the multipart body.
+
+   When a server receives an HTTP request with a single frame, the HTTP
+   response content type MUST be "application/epp+xml".
+
+   When a server receives a multipart HTTP request, the HTTP response
+   content type MUST be "multipart/mixed" and MUST define the boundry.
+   The content type for each part of the multipart response MUST be
+   "application/epp+xml".
+
+   When a client receives a multipart HTTP response, the client MUST
+   process each part in the order it appears in the multipart body.
+
+   EPP errors MUST be returned as part of the EPP response XML, not as
+   HTTP error codes.  HTTP error codes are reserved for HTTP errors
+   only.
+
+4.  Security Considerations
+
+   TBD
+
+5.  Privacy Considerations
+
+   There are no additional privacy concerns introduced by this document.
+
+
+
+
+
+
+
+Eden                    Expires November 19, 2018               [Page 3]
+
+Internet-Draft                EPP over HTTP                     May 2018
+
+
+6.  IANA Considerations
+
+   There are no additional IANA considerations introduced by this
+   document.
+
+Appendix A.  Acknowledgements
+
+Author's Address
+
+   Anthony Eden
+   DNSimple
+   2412 Irwin St
+   Melbourne  FL 32901
+
+   Email: anthony.eden@dnsimple.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Eden                    Expires November 19, 2018               [Page 4]
