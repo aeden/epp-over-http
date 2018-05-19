@@ -48,7 +48,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 As HTTP is a stateless protocol, each HTTP request must contain all of the information necessary to establish the identity of the EPP client. The EPP `<login>` and `<logout>` commands are not applicable when using HTTP as the transport protocol, rather authentication
 credentials MUST be sent on each request using standard HTTP authentication mechanisms.
 
-The EPP `<login>` command can be mapped to HTTP headers as follows:
+The EPP `<login>` command is mapped to HTTP headers as follows:
 
     Authorization: Basic Q2xpZW50WDpGT08tYmFyMg==
     Content-Language: en
