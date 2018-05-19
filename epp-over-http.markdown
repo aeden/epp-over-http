@@ -45,7 +45,9 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 # Session Management
 
-As HTTP is a stateless protocol, each HTTP request must contain all of the information necessary to establish the identity of the EPP client. The EPP `<login>` and `<logout>` commands are not applicable when using HTTP as the transport protocol, rather authentication
+As HTTP is a stateless protocol, each HTTP request must contain all of the information necessary to establish the identity of the EPP client. Using HTTP for transport meets the requirements of section 2.1 of [RFC5730] by encapsulating all state required for a transaction in the request and response.
+
+The EPP `<login>` and `<logout>` commands are not applicable when using HTTP as the transport protocol, rather authentication
 credentials MUST be sent on each request using standard HTTP authentication mechanisms.
 
 The EPP `<login>` command is mapped to HTTP headers as follows:
@@ -60,7 +62,7 @@ The EPP `<login>` command is mapped to HTTP headers as follows:
 
 # Message Exchange
 
-HTTP servers that support EPP over HTTP must support HTTP requests with a single EPP frame. Servers MAY support multipart messages.
+HTTP servers that support EPP over HTTP must support HTTP requests with a single EPP frame. Servers MAY support multipart messages with each part containing an EPP frame.
 
 When the body of the HTTP request contains a single EPP frame, the content type of the HTTP message MUST be "application/epp+xml".
 
@@ -74,9 +76,21 @@ When a client receives a multipart HTTP response, the client MUST process each p
 
 EPP errors MUST be returned as part of the EPP response XML, not as HTTP error codes. HTTP error codes are reserved for HTTP errors only.
 
+# Transport Considerations
+
+Section 2.1 of the EPP core protocol specification [RFC5730] describes considerations to be addressed by protocol transport mappings.  This document addresses each of the considerations using a combination of features described in this document, features provided by HTTP, and features provided by TCP.
+
 # Security Considerations
 
-TBD
+EPP as-is provides only simple client authentication services using identifiers and plain text passwords.  A passive attack is sufficient to recover client identifiers and passwords, allowing trivial command forgery.  Protection against most other common attacks MUST be provided by other layered protocols.
+
+The Transport Layer Security (TLS) Protocol version 1.2 [RFC5246] or its successors, using the latest version supported by both parties, MUST be used to provide integrity, confidentiality, and mutual strong client-server authentication.  Implementations of TLS often contain a weak cryptographic mode that SHOULD NOT be used to protect EPP.  Clients and servers desiring high security SHOULD instead use TLS with cryptographic algorithms that are less susceptible to compromise.
+
+Authentication using the TLS Handshake Protocol confirms the identity of the client and server machines.  EPP uses an additional client identifier and password to identify and authenticate the client's user identity to the server, supplementing the machine authentication provided by TLS.  The identity described in the client certificate and the identity described in the EPP client identifier can differ, as a server can assign multiple user identities for use from any particular client machine.  Acceptable certificate identities MUST be negotiated between client operators and server operators using an out-of-band mechanism.  Presented certificate identities MUST match negotiated identities before EPP service is granted.
+
+There is a risk of login credential compromise if a client does not properly identify a server before attempting to establish an EPP session.  Before sending login credentials to the server, a client needs to confirm that the server certificate received in the TLS handshake is an expected certificate for the server. After establishing a TLS session clients MUST compare the certificate subject and/or subjectAltName to expected server identification information and abort processing if a mismatch is detected.
+
+EPP HTTP servers are vulnerable to common HTTP denial-of-service attacks  Servers SHOULD take steps to minimize the impact of a denial-of-service attack using combinations of easily implemented solutions, such as deployment of firewall technology and border router filters to restrict inbound server access to known, trusted clients.
 
 # Privacy Considerations
 
