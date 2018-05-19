@@ -379,9 +379,10 @@
 <link href="#rfc.section.1.2" rel="Chapter" title="1.2 Terminology">
 <link href="#rfc.section.2" rel="Chapter" title="2 Session Management">
 <link href="#rfc.section.3" rel="Chapter" title="3 Message Exchange">
-<link href="#rfc.section.4" rel="Chapter" title="4 Security Considerations">
-<link href="#rfc.section.5" rel="Chapter" title="5 Privacy Considerations">
-<link href="#rfc.section.6" rel="Chapter" title="6 IANA Considerations">
+<link href="#rfc.section.4" rel="Chapter" title="4 Transport Considerations">
+<link href="#rfc.section.5" rel="Chapter" title="5 Security Considerations">
+<link href="#rfc.section.6" rel="Chapter" title="6 Privacy Considerations">
+<link href="#rfc.section.7" rel="Chapter" title="7 IANA Considerations">
 <link href="#rfc.appendix.A" rel="Chapter" title="A Acknowledgements">
 <link href="#rfc.authors" rel="Chapter">
 
@@ -452,11 +453,13 @@
 </li>
 <li>3.   <a href="#rfc.section.3">Message Exchange</a>
 </li>
-<li>4.   <a href="#rfc.section.4">Security Considerations</a>
+<li>4.   <a href="#rfc.section.4">Transport Considerations</a>
 </li>
-<li>5.   <a href="#rfc.section.5">Privacy Considerations</a>
+<li>5.   <a href="#rfc.section.5">Security Considerations</a>
 </li>
-<li>6.   <a href="#rfc.section.6">IANA Considerations</a>
+<li>6.   <a href="#rfc.section.6">Privacy Considerations</a>
+</li>
+<li>7.   <a href="#rfc.section.7">IANA Considerations</a>
 </li>
 <li>Appendix A.   <a href="#rfc.appendix.A">Acknowledgements</a>
 </li>
@@ -481,8 +484,9 @@
 <h1 id="rfc.section.2">
 <a href="#rfc.section.2">2.</a> <a href="#session-management" id="session-management">Session Management</a>
 </h1>
-<p id="rfc.section.2.p.1">As HTTP is a stateless protocol, each HTTP request must contain all of the information necessary to establish the identity of the EPP client. The EPP <samp>&lt;login&gt;</samp> and <samp>&lt;logout&gt;</samp> commands are not applicable when using HTTP as the transport protocol, rather authentication credentials MUST be sent on each request using standard HTTP authentication mechanisms.  </p>
-<p id="rfc.section.2.p.2">The EPP <samp>&lt;login&gt;</samp> command can be mapped to HTTP headers as follows: </p>
+<p id="rfc.section.2.p.1">As HTTP is a stateless protocol, each HTTP request must contain all of the information necessary to establish the identity of the EPP client. Using HTTP for transport meets the requirements of section 2.1 of [RFC5730] by encapsulating all state required for a transaction in the request and response.  </p>
+<p id="rfc.section.2.p.2">The EPP <samp>&lt;login&gt;</samp> and <samp>&lt;logout&gt;</samp> commands are not applicable when using HTTP as the transport protocol, rather authentication credentials MUST be sent on each request using standard HTTP authentication mechanisms.  </p>
+<p id="rfc.section.2.p.3">The EPP <samp>&lt;login&gt;</samp> command is mapped to HTTP headers as follows: </p>
 <pre>
 Authorization: Basic Q2xpZW50WDpGT08tYmFyMg==
 Content-Language: en
@@ -495,7 +499,7 @@ X-EPP-Service-Ext: http://custom/obj1ext-1.0
 <h1 id="rfc.section.3">
 <a href="#rfc.section.3">3.</a> <a href="#message-exchange" id="message-exchange">Message Exchange</a>
 </h1>
-<p id="rfc.section.3.p.1">HTTP servers that support EPP over HTTP must support HTTP requests with a single EPP frame. Servers MAY support multipart messages.  </p>
+<p id="rfc.section.3.p.1">HTTP servers that support EPP over HTTP must support HTTP requests with a single EPP frame. Servers MAY support multipart messages with each part containing an EPP frame.  </p>
 <p id="rfc.section.3.p.2">When the body of the HTTP request contains a single EPP frame, the content type of the HTTP message MUST be "application/epp+xml".  </p>
 <p id="rfc.section.3.p.3">When a multipart body is used, the body content type MUST be "multipart/mixed" and MUST define the boundry. Each part MUST contain a single EPP frame and the content type of each part MUST be "application/epp+xml". In multipart messages, each part MUST be processed in the order it appears in the multipart body.  </p>
 <p id="rfc.section.3.p.4">When a server receives an HTTP request with a single frame, the HTTP response content type MUST be "application/epp+xml".  </p>
@@ -503,17 +507,25 @@ X-EPP-Service-Ext: http://custom/obj1ext-1.0
 <p id="rfc.section.3.p.6">When a client receives a multipart HTTP response, the client MUST process each part in the order it appears in the multipart body.  </p>
 <p id="rfc.section.3.p.7">EPP errors MUST be returned as part of the EPP response XML, not as HTTP error codes. HTTP error codes are reserved for HTTP errors only.  </p>
 <h1 id="rfc.section.4">
-<a href="#rfc.section.4">4.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a>
+<a href="#rfc.section.4">4.</a> <a href="#transport-considerations" id="transport-considerations">Transport Considerations</a>
 </h1>
-<p id="rfc.section.4.p.1">TBD </p>
+<p id="rfc.section.4.p.1">Section 2.1 of the EPP core protocol specification [RFC5730] describes considerations to be addressed by protocol transport mappings.  This document addresses each of the considerations using a combination of features described in this document, features provided by HTTP, and features provided by TCP.  </p>
 <h1 id="rfc.section.5">
-<a href="#rfc.section.5">5.</a> <a href="#privacy-considerations" id="privacy-considerations">Privacy Considerations</a>
+<a href="#rfc.section.5">5.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a>
 </h1>
-<p id="rfc.section.5.p.1">There are no additional privacy concerns introduced by this document.  </p>
+<p id="rfc.section.5.p.1">EPP as-is provides only simple client authentication services using identifiers and plain text passwords.  A passive attack is sufficient to recover client identifiers and passwords, allowing trivial command forgery.  Protection against most other common attacks MUST be provided by other layered protocols.  </p>
+<p id="rfc.section.5.p.2">The Transport Layer Security (TLS) Protocol version 1.2 [RFC5246] or its successors, using the latest version supported by both parties, MUST be used to provide integrity, confidentiality, and mutual strong client-server authentication.  Implementations of TLS often contain a weak cryptographic mode that SHOULD NOT be used to protect EPP.  Clients and servers desiring high security SHOULD instead use TLS with cryptographic algorithms that are less susceptible to compromise.  </p>
+<p id="rfc.section.5.p.3">Authentication using the TLS Handshake Protocol confirms the identity of the client and server machines.  EPP uses an additional client identifier and password to identify and authenticate the client's user identity to the server, supplementing the machine authentication provided by TLS.  The identity described in the client certificate and the identity described in the EPP client identifier can differ, as a server can assign multiple user identities for use from any particular client machine.  Acceptable certificate identities MUST be negotiated between client operators and server operators using an out-of-band mechanism.  Presented certificate identities MUST match negotiated identities before EPP service is granted.  </p>
+<p id="rfc.section.5.p.4">There is a risk of login credential compromise if a client does not properly identify a server before attempting to establish an EPP session.  Before sending login credentials to the server, a client needs to confirm that the server certificate received in the TLS handshake is an expected certificate for the server. After establishing a TLS session clients MUST compare the certificate subject and/or subjectAltName to expected server identification information and abort processing if a mismatch is detected.  </p>
+<p id="rfc.section.5.p.5">EPP HTTP servers are vulnerable to common HTTP denial-of-service attacks  Servers SHOULD take steps to minimize the impact of a denial-of-service attack using combinations of easily implemented solutions, such as deployment of firewall technology and border router filters to restrict inbound server access to known, trusted clients.  </p>
 <h1 id="rfc.section.6">
-<a href="#rfc.section.6">6.</a> <a href="#iana-considerations" id="iana-considerations">IANA Considerations</a>
+<a href="#rfc.section.6">6.</a> <a href="#privacy-considerations" id="privacy-considerations">Privacy Considerations</a>
 </h1>
-<p id="rfc.section.6.p.1">There are no additional IANA considerations introduced by this document.  </p>
+<p id="rfc.section.6.p.1">There are no additional privacy concerns introduced by this document.  </p>
+<h1 id="rfc.section.7">
+<a href="#rfc.section.7">7.</a> <a href="#iana-considerations" id="iana-considerations">IANA Considerations</a>
+</h1>
+<p id="rfc.section.7.p.1">There are no additional IANA considerations introduced by this document.  </p>
 <h1 id="rfc.appendix.A">
 <a href="#rfc.appendix.A">Appendix A.</a> <a href="#acknowledgements" id="acknowledgements">Acknowledgements</a>
 </h1>
